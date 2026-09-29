@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseInterceptors, UsePipes, ValidationPipe, NotFoundException, UseGuards, Req, Patch, HttpException} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseInterceptors, UsePipes, ValidationPipe, NotFoundException, UseGuards, Req, Patch, HttpException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
 import { extname } from 'path';
@@ -17,7 +17,7 @@ export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService
-  ) {}
+  ) { }
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -52,17 +52,20 @@ export class UsersController {
 
   @UseGuards(UserGuard)
   @Post(':id/upload-image')
-  @UseInterceptors(FileInterceptor('file', { fileFilter: (req, file, cb) => {
-    if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/)) cb(null, true);
-    else {
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req, file, cb) => {
+      if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/)) cb(null, true);
+      else {
         cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-    }},
-    limits: { fileSize: 30000 }, storage:diskStorage({
+      }
+    },
+    limits: { fileSize: 30000 }, storage: diskStorage({
       destination: './uploads',
       filename: function (req, file, cb) {
-        cb(null,Date.now()+file.originalname) },
-      })
-    }))
+        cb(null, Date.now() + file.originalname)
+      },
+    })
+  }))
   uploadProfileImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
     return this.userService.updateProfileImage(id, file?.filename);
   }
@@ -74,11 +77,11 @@ export class UsersController {
     if (!user) {
       throw new HttpException('Invalid credentials', 401);
     }
-    
+
     // Return user data without password
     const payload = { sub: user.userID, email: user.email, role: user.role };
     return {
-      access_token: await this.jwtService.signAsync(payload,{expiresIn: '6h'}),
+      access_token: await this.jwtService.signAsync(payload, { expiresIn: '6h' }),
     }
   }
 
@@ -94,11 +97,11 @@ export class UsersController {
       data.currentPassword,
       data.newPassword
     );
-    
+
     if (!success) {
       throw new HttpException('Current password is incorrect', 400);
     }
-    
+
     return { message: 'Password changed successfully' };
   }
 
